@@ -59,3 +59,15 @@ def simpan_deskripsi(kunci, teks):
     semua = _baca_semua()
     semua[f"deskripsi_{kunci}"] = teks
     _simpan_semua(semua)
+
+# --- HARGA PAKET ---
+def ambil_harga(paket):
+    """Ambil harga dasar paket (integer). Kembalikan None jika belum diatur."""
+    semua = _baca_semua()
+    return semua.get(f"harga_{paket}", None)
+
+def simpan_harga(paket, jumlah):
+    """Simpan harga dasar paket (integer)."""
+    semua = _baca_semua()
+    semua[f"harga_{paket}"] = jumlah
+    _simpan_semua(semua)

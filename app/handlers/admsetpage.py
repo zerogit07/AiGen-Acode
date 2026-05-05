@@ -2,7 +2,7 @@ from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from app.states.adminpage import AdminPageState
-from app.utils.gambar_page import simpan_gambar, simpan_deskripsi
+from app.utils.gambar_page import simpan_gambar, simpan_deskripsi, simpan_harga
 from config import ADMIN_ID
 
 router = Router()
@@ -26,6 +26,9 @@ async def admsetpage_menu(callback: types.CallbackQuery):
     builder.button(text="📝 Deskripsi Lite".center(25), callback_data="admsetpage_desc_lite")
     builder.button(text="📝 Deskripsi Pro".center(25), callback_data="admsetpage_desc_pro")
     builder.button(text="📝 Deskripsi Ultra".center(25), callback_data="admsetpage_desc_ultra")
+    builder.button(text="💰 Ubah Harga Lite".center(25), callback_data="admsetpage_harga_lite")
+    builder.button(text="💰 Ubah Harga Pro".center(25), callback_data="admsetpage_harga_pro")
+    builder.button(text="💰 Ubah Harga Ultra".center(25), callback_data="admsetpage_harga_ultra")
     builder.button(text="🔙 Kembali".center(25), callback_data="admin_panel")
     builder.adjust(1)
 
@@ -71,13 +74,30 @@ async def admsetpage_deskripsi(callback: types.CallbackQuery, state: FSMContext)
         await callback.answer("Akses ditolak.", show_alert=True)
         return
 
-    kunci = callback.data.replace("admsetpage_desc_", "")  # banner, lite, pro, ultra
+    kunci = callback.data.replace("admsetpage_desc_", "")
     await state.set_state(AdminPageState.menunggu_deskripsi)
     await state.update_data(kunci_deskripsi=kunci)
 
     await callback.message.edit_text(
-        f"Kirim teks deskripsi untuk <b>{kunci.capitalize()}</b>.\n"
-        "Ketik /cancel untuk batal.",
+        f"Kirim teks deskripsi untuk <b>{kunci.capitalize()}</b>.\nKetik /cancel untuk batal.",
+        parse_mode="HTML",
+        reply_markup=tombol_kembali_admin()
+    )
+    await callback.answer()
+
+# === HARGA ===
+@router.callback_query(F.data.startswith("admsetpage_harga_"))
+async def admsetpage_harga(callback: types.CallbackQuery, state: FSMContext):
+    if callback.from_user.id != ADMIN_ID:
+        await callback.answer("Akses ditolak.", show_alert=True)
+        return
+
+    paket = callback.data.replace("admsetpage_harga_", "")
+    await state.set_state(AdminPageState.menunggu_harga)
+    await state.update_data(kunci_harga=paket)
+
+    await callback.message.edit_text(
+        f"Kirim harga dasar untuk <b>{paket.capitalize()}</b> (angka saja, tanpa titik/koma).\nKetik /cancel untuk batal.",
         parse_mode="HTML",
         reply_markup=tombol_kembali_admin()
     )
@@ -124,6 +144,29 @@ async def simpan_deskripsi_handler(message: types.Message, state: FSMContext):
     simpan_deskripsi(kunci, teks)
     await state.clear()
     await message.answer(f"✅ Deskripsi <b>{kunci.capitalize()}</b> berhasil disimpan!", parse_mode="HTML",
+                         reply_markup=tombol_kembali_admin())
+
+# === SIMPAN HARGA ===
+@router.message(AdminPageState.menunggu_harga)
+async def simpan_harga_handler(message: types.Message, state: FSMContext):
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    data = await state.get_data()
+    paket = data.get("kunci_harga")
+    if not paket:
+        await state.clear()
+        return
+
+    try:
+        jumlah = int(message.text.strip())
+    except ValueError:
+        await message.answer("Harap kirim angka bulat saja (contoh: 99000).")
+        return
+
+    simpan_harga(paket, jumlah)
+    await state.clear()
+    await message.answer(f"✅ Harga <b>{paket.capitalize()}</b> berhasil disimpan: Rp {jumlah:,}", parse_mode="HTML",
                          reply_markup=tombol_kembali_admin())
 
 # === CANCEL ===

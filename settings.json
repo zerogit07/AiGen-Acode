@@ -1,11 +1,14 @@
 {
   "start_image": "https://ibb.co/j9PryDmF",
   "members": {
-    "8717719833": "Ultra"
+    "8717719833": "Pro"
   },
   "qris": "https://ibb.co.com/PsxvBhYf",
   "deskripsi_banner": "\u2728 WELCOME TO AIGEN BOT\n\n\ud83c\udfaf TERSEDIA MODEL\n\ud83d\udd25 Kling V3 (Pro / Std / Motion / Omni)  \n\ud83c\udfac Kling 2.6 (Pro / Motion / Std)  \n\ud83d\ude80 Kling 2.5 Turbo  \n\ud83c\udfac Kling 2.1 (Pro / Master)  \n\u2728 Kling O1 (Pro / Std)\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\ud83d\udc8e PAKET MEMBER\n\n\ud83c\udf31 AiGen Lite  \n\ud83c\udfac Video: 30/hari  \n\ud83d\udcb0 Harga: Rp99.000/bulan  \n\n\u2b50 AiGen Pro  \n\ud83c\udfac Video: 60/hari  \n\ud83d\udcb0 Harga: Rp199.000/bulan  \n\n\ud83d\udc8e AiGen Ultra  \n\ud83c\udfac Video: 100/hari  \n\ud83d\udcb0 Harga: Rp299.000/bulan  \n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\ud83d\udc47 Pilih paket dan mulai sekarang",
-  "deskripsi_lite": "AIGEN LITE \n- Akses Semua Model\n- Limit: 30 Video/Hari",
-  "deskripsi_pro": "AIGEN PRO \n- Akses Semua Model\n- Limit: 60 Video/Hari",
-  "deskripsi_ultra": "AIGEN ULTRA \n- Akses Semua Model\n- Limit: 100 Video/Hari"
+  "deskripsi_lite": "- Akses Semua Model\n- Limit: 30 Video/Hari",
+  "deskripsi_pro": "- Akses Semua Model\n- Limit: 60 Video/Hari",
+  "deskripsi_ultra": "- Akses Semua Model\n- Limit: 100 Video/Hari",
+  "harga_lite": 99000,
+  "harga_pro": 199000,
+  "harga_ultra": 299000
 }

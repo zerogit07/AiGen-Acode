@@ -4,3 +4,4 @@ class AdminPageState(StatesGroup):
     menunggu_banner = State()
     menunggu_qris = State()
     menunggu_deskripsi = State()
+    menunggu_harga = State()

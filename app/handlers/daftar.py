@@ -3,8 +3,9 @@ from aiogram.fsm.context import FSMContext
 from app.states.daftar_state import DaftarState
 from app.keyboards.inlinedaftar import daftar_keyboard
 from app.keyboards.inlinenonmember import nonmember_keyboard
-from app.utils.gambar_page import ambil_gambar, ambil_deskripsi
+from app.utils.gambar_page import ambil_gambar, ambil_deskripsi, ambil_harga
 from config import ADMIN_ID
+
 
 router = Router()
 
@@ -15,18 +16,39 @@ async def daftar_pilih_paket(callback: types.CallbackQuery):
     deskripsi = ambil_deskripsi(paket.lower())
     if not deskripsi:
         deskripsi = f"Paket {paket} - Deskripsi belum diatur oleh admin."
+
+    # Ambil harga dasar
+    harga_dasar = ambil_harga(paket.lower())
+
+    # Ambil 3 digit terakhir User ID
+    kode_unik = int(str(callback.from_user.id)[-3:])
+
+    # Hitung total
+    if harga_dasar is not None:
+        total = harga_dasar + kode_unik
+        total_str = f"Rp {total:,}".replace(",", ".")
+    else:
+        total_str = "Harga belum diatur"
+
     qris = ambil_gambar("qris")
+
+    caption = (
+        f"📦 <b>Paket {paket}</b>\n"
+        f"{deskripsi}\n\n"
+        f"💰 Harga: {total_str}\n\n"
+        f"Silakan lakukan pembayaran ke QRIS di atas."
+    )
 
     if qris:
         await callback.message.answer_photo(
             photo=qris,
-            caption=f"📦 <b>Paket {paket}</b>\n{deskripsi}\n\nSilakan lakukan pembayaran ke QRIS di atas.",
+            caption=caption,
             parse_mode="HTML",
             reply_markup=daftar_keyboard(paket)
         )
     else:
         await callback.message.answer(
-            f"📦 <b>Paket {paket}</b>\n{deskripsi}\n\nQRIS belum diatur oleh admin.",
+            caption,
             parse_mode="HTML",
             reply_markup=daftar_keyboard(paket)
         )
