@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from config import ADMIN_ID
 from app.keyboards.inlinestart import menu_utama
 from app.keyboards.inlinenonmember import nonmember_keyboard
-from app.utils.gambar_page import ambil_gambar, ambil_deskripsi, get_member
+from app.utils.gambar_page import ambil_gambar, ambil_deskripsi, get_member, catat_nonmember
 
 router = Router()
 
@@ -31,6 +31,7 @@ async def cmd_start(message: types.Message):
         return
 
     # 3. Non‑member
+    catat_nonmember(user_id)
     url_gambar = ambil_gambar("start_image")
     deskripsi = ambil_deskripsi("banner")
     if not deskripsi:

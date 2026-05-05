@@ -7,6 +7,7 @@ from app.handlers.admin import router as admin_router
 from app.handlers.admsetpage import router as admsetpage_router
 from app.handlers.daftar import router as daftar_router
 from app.handlers.admapprove import router as admapprove_router
+from app.handlers.admsetstat import router as admsetstat_router
 
 
 bot = Bot(token=BOT_TOKEN)
@@ -17,7 +18,7 @@ dp.include_router(admin_router)
 dp.include_router(admsetpage_router)
 dp.include_router(daftar_router)
 dp.include_router(admapprove_router)
-
+dp.include_router(admsetstat_router)
 
 async def main():
     print("🤖 Bot berjalan...")

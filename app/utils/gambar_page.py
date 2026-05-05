@@ -71,3 +71,19 @@ def simpan_harga(paket, jumlah):
     semua = _baca_semua()
     semua[f"harga_{paket}"] = jumlah
     _simpan_semua(semua)
+    
+# --- NON‑MEMBER ---
+def catat_nonmember(user_id):
+    semua = _baca_semua()
+    semua.setdefault("nonmember", [])
+    if user_id not in semua["nonmember"]:
+        semua["nonmember"].append(user_id)
+        _simpan_semua(semua)
+
+def ambil_semua_nonmember():
+    semua = _baca_semua()
+    return semua.get("nonmember", [])
+
+def ambil_semua_member():
+    semua = _baca_semua()
+    return semua.get("members", {})
