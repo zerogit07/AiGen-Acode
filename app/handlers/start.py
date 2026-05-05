@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from config import ADMIN_ID
 from app.keyboards.inlinestart import menu_utama
 from app.keyboards.inlinenonmember import nonmember_keyboard
-from app.utils.gambar_page import ambil_gambar, ambil_deskripsi
+from app.utils.gambar_page import ambil_gambar, ambil_deskripsi, get_member
 
 router = Router()
 
@@ -11,7 +11,7 @@ router = Router()
 async def cmd_start(message: types.Message):
     user_id = message.from_user.id
 
-    # Admin selalu masuk menu utama
+    # 1. Admin
     if user_id == ADMIN_ID:
         await message.answer(
             "<b>🤖 Menu Utama</b>",
@@ -20,7 +20,17 @@ async def cmd_start(message: types.Message):
         )
         return
 
-    # --- Non‑member ---
+    # 2. Member (Lite, Pro, Ultra)
+    paket = get_member(user_id)
+    if paket:
+        await message.answer(
+            "<b>🤖 Menu Utama</b>",
+            parse_mode="HTML",
+            reply_markup=menu_utama()
+        )
+        return
+
+    # 3. Non‑member
     url_gambar = ambil_gambar("start_image")
     deskripsi = ambil_deskripsi("banner")
     if not deskripsi:

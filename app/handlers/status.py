@@ -1,14 +1,26 @@
 from aiogram import Router, types
 from aiogram.filters import Command
+from config import ADMIN_ID
+from app.utils.gambar_page import get_member
 
 router = Router()
 
 @router.message(Command("status"))
 async def cmd_status(message: types.Message):
     user_id = message.from_user.id
-    # Data dummy dulu
-    status = "Non Member"
-    expired = "-"
+
+    # Admin
+    if user_id == ADMIN_ID:
+        status = "Admin"
+        expired = "Unlimited"
+    else:
+        paket = get_member(user_id)
+        if paket:
+            status = f"Member {paket}"
+            expired = "-"   # nanti diganti dari database
+        else:
+            status = "Non Member"
+            expired = "-"
 
     text = (
         f"📊 <b>Status Akun</b>\n"
