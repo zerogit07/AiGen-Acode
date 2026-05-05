@@ -30,7 +30,7 @@ async def admsetpage_menu(callback: types.CallbackQuery):
     builder.button(text="💰 Ubah Harga Pro".center(25), callback_data="admsetpage_harga_pro")
     builder.button(text="💰 Ubah Harga Ultra".center(25), callback_data="admsetpage_harga_ultra")
     builder.button(text="🔙 Kembali".center(25), callback_data="admin_panel")
-    builder.adjust(1)
+    builder.adjust(2)
 
     await callback.message.edit_text(
         "<b>📄 Halaman Setting</b>\nPilih pengaturan yang ingin diubah.",
@@ -174,3 +174,18 @@ async def simpan_harga_handler(message: types.Message, state: FSMContext):
 async def admsetpage_cancel(message: types.Message, state: FSMContext):
     await state.clear()
     await message.answer("Proses dibatalkan.", reply_markup=tombol_kembali_admin())
+
+
+# === Tombol Kembali ===
+@router.callback_query(F.data == "admin_panel")
+async def kembali_ke_admin(callback: types.CallbackQuery):
+    if callback.from_user.id != ADMIN_ID:
+        await callback.answer("Akses ditolak.", show_alert=True)
+        return
+    from app.keyboards.inlineadmin import admin_panel
+    await callback.message.edit_text(
+        "<b>🔐 Admin Panel</b>",
+        parse_mode="HTML",
+        reply_markup=admin_panel()
+    )
+    await callback.answer()

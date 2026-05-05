@@ -84,11 +84,23 @@ async def daftar_terima_bukti(message: types.Message, state: FSMContext, bot):
     paket = data["paket"]
     user = message.from_user
 
+    # Ambil harga dasar
+    harga_dasar = ambil_harga(paket.lower())
+    # Ambil 3 digit terakhir User ID
+    kode_unik = int(str(user.id)[-3:])
+    # Hitung total
+    if harga_dasar is not None:
+        total = harga_dasar + kode_unik
+        harga_str = f"Rp {total:,}".replace(",", ".")
+    else:
+        harga_str = "Harga belum diatur"
+
+    # Kirim ke admin
     from aiogram.utils.keyboard import InlineKeyboardBuilder
     builder = InlineKeyboardBuilder()
     builder.button(text="✅ Setujui".center(25), callback_data=f"approve_{user.id}_{paket}")
     builder.button(text="❌ Tolak".center(25), callback_data=f"reject_{user.id}_{paket}")
-    builder.adjust(2)
+    builder.adjust(1)
 
     await bot.send_photo(
         chat_id=ADMIN_ID,
@@ -97,7 +109,8 @@ async def daftar_terima_bukti(message: types.Message, state: FSMContext, bot):
             f"📩 <b>Bukti Pembayaran</b>\n"
             f"User ID: <code>{user.id}</code>\n"
             f"Username: @{user.username or '-'}\n"
-            f"Paket: {paket}"
+            f"Paket: {paket}\n"
+            f"Harga: {harga_str}"
         ),
         parse_mode="HTML",
         reply_markup=builder.as_markup()
