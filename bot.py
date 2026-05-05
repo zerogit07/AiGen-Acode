@@ -10,6 +10,7 @@ from app.handlers.admapprove import router as admapprove_router
 from app.handlers.admsetstat import router as admsetstat_router
 from app.handlers.admmember import router as admmember_router
 from app.handlers.admsetmsg import router as admsetmsg_router
+from app.database.db import init_db, migrate_json_to_db
 
 
 bot = Bot(token=BOT_TOKEN)
@@ -24,7 +25,12 @@ dp.include_router(admsetstat_router)
 dp.include_router(admmember_router)
 dp.include_router(admsetmsg_router)
 
+
+
 async def main():
+    await init_db()
+    await migrate_json_to_db()
+    
     print("🤖 Bot berjalan...")
     await dp.start_polling(bot)
 
