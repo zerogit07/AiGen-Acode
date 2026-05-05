@@ -115,3 +115,31 @@ async def migrate_json_to_db():
         await db.commit()
     finally:
         await db.close()
+        
+
+async def get_limit(paket: str):
+    """Ambil limit paket. Kembalikan dict {'process_limit': int, 'daily_quota': int}."""
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        cursor = await db.execute(
+            "SELECT process_limit, daily_quota FROM limits WHERE paket = ?",
+            (paket,)
+        )
+        row = await cursor.fetchone()
+        if row:
+            return {"process_limit": row[0], "daily_quota": row[1]}
+        return None
+    finally:
+        await db.close()
+
+async def set_limit(paket: str, process_limit: int, daily_quota: int):
+    """Update limit untuk suatu paket."""
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        await db.execute(
+            "UPDATE limits SET process_limit = ?, daily_quota = ? WHERE paket = ?",
+            (process_limit, daily_quota, paket)
+        )
+        await db.commit()
+    finally:
+        await db.close()
