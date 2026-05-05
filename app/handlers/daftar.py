@@ -1,0 +1,81 @@
+from aiogram import Router, F, types
+from aiogram.fsm.context import FSMContext
+from app.states.daftar_state import DaftarState
+from app.keyboards.inlinedaftar import daftar_keyboard
+from app.keyboards.inlinenonmember import nonmember_keyboard
+from app.utils.gambar_page import ambil_gambar, ambil_deskripsi
+from config import ADMIN_ID
+
+router = Router()
+
+# === TOMBOL PAKET DARI HALAMAN NON‑MEMBER ===
+@router.callback_query(F.data.in_({"register_lite", "register_pro", "register_ultra"}))
+async def daftar_pilih_paket(callback: types.CallbackQuery):
+    paket = callback.data.replace("register_", "").capitalize()
+    deskripsi = ambil_deskripsi(paket.lower())
+    if not deskripsi:
+        deskripsi = f"Paket {paket} - Deskripsi belum diatur oleh admin."
+    qris = ambil_gambar("qris")
+
+    if qris:
+        await callback.message.answer_photo(
+            photo=qris,
+            caption=f"📦 <b>Paket {paket}</b>\n{deskripsi}\n\nSilakan lakukan pembayaran ke QRIS di atas.",
+            parse_mode="HTML",
+            reply_markup=daftar_keyboard(paket)
+        )
+    else:
+        await callback.message.answer(
+            f"📦 <b>Paket {paket}</b>\n{deskripsi}\n\nQRIS belum diatur oleh admin.",
+            parse_mode="HTML",
+            reply_markup=daftar_keyboard(paket)
+        )
+    await callback.answer()
+
+# === TOMBOL KEMBALI ===
+@router.callback_query(F.data == "kembali_nonmember")
+async def daftar_kembali(callback: types.CallbackQuery):
+    await callback.message.delete()
+    await callback.message.answer(
+        "Maaf, kamu belum terdaftar.\nSilakan pilih paket pendaftaran di bawah ini:",
+        reply_markup=nonmember_keyboard()
+    )
+    await callback.answer()
+
+# === TOMBOL KIRIM BUKTI ===
+@router.callback_query(F.data.startswith("kirim_bukti_"))
+async def daftar_minta_bukti(callback: types.CallbackQuery, state: FSMContext):
+    paket = callback.data.replace("kirim_bukti_", "").capitalize()
+    await state.set_state(DaftarState.menunggu_bukti)
+    await state.update_data(paket=paket)
+    await callback.message.answer("📎 Kirim foto bukti pembayaran kamu sekarang.")
+    await callback.answer()
+
+# === TERIMA FOTO BUKTI ===
+@router.message(DaftarState.menunggu_bukti, F.photo)
+async def daftar_terima_bukti(message: types.Message, state: FSMContext, bot):
+    data = await state.get_data()
+    paket = data["paket"]
+    user = message.from_user
+
+    from aiogram.utils.keyboard import InlineKeyboardBuilder
+    builder = InlineKeyboardBuilder()
+    builder.button(text="✅ Setujui".center(25), callback_data=f"approve_{user.id}_{paket}")
+    builder.button(text="❌ Tolak".center(25), callback_data=f"reject_{user.id}_{paket}")
+    builder.adjust(2)
+
+    await bot.send_photo(
+        chat_id=ADMIN_ID,
+        photo=message.photo[-1].file_id,
+        caption=(
+            f"📩 <b>Bukti Pembayaran</b>\n"
+            f"User ID: <code>{user.id}</code>\n"
+            f"Username: @{user.username or '-'}\n"
+            f"Paket: {paket}"
+        ),
+        parse_mode="HTML",
+        reply_markup=builder.as_markup()
+    )
+
+    await message.answer("✅ Bukti kamu sudah dikirim ke admin. Tunggu konfirmasi.")
+    await state.clear()
