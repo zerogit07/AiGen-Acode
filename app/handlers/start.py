@@ -14,7 +14,7 @@ async def cmd_start(message: types.Message):
     # Admin selalu masuk menu utama
     if user_id == ADMIN_ID:
         await message.answer(
-            "<b>Menu Utama</b>",
+            "<b>🤖 Menu Utama</b>",
             parse_mode="HTML",
             reply_markup=menu_utama()
         )
