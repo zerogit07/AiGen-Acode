@@ -87,3 +87,17 @@ def ambil_semua_nonmember():
 def ambil_semua_member():
     semua = _baca_semua()
     return semua.get("members", {})
+
+#----member setting----   
+def hapus_member(user_id):
+    semua = _baca_semua()
+    members = semua.get("members", {})
+    members.pop(str(user_id), None)
+    semua["members"] = members
+    _simpan_semua(semua)
+
+def semua_member_urut():
+    semua = _baca_semua()
+    members = semua.get("members", {})
+    # Urutkan berdasarkan user_id (integer)
+    return dict(sorted(members.items(), key=lambda x: int(x[0])))
