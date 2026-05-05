@@ -1,3 +1,19 @@
+# Virtual Environment
 venv/
+
+# Environment Variables
 .env
+
+# Python cache
 __pycache__/
+*.pyc
+
+# Database lokal (bot.db)
+*.db
+
+# File pengaturan sementara
+settings.json
+
+# File OS (opsional)
+.DS_Store
+Thumbs.db
