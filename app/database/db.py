@@ -143,3 +143,30 @@ async def set_limit(paket: str, process_limit: int, daily_quota: int):
         await db.commit()
     finally:
         await db.close()
+        
+async def import_csv_to_table(table_name: str, headers: list, rows: list):
+    """Mengimpor data CSV ke tabel. Menghapus data lama terlebih dahulu."""
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        await db.execute(f"DELETE FROM {table_name}")
+        placeholders = ",".join(["?" for _ in headers])
+        sql = f"INSERT INTO {table_name} ({','.join(headers)}) VALUES ({placeholders})"
+        await db.executemany(sql, rows)
+        await db.commit()
+        return len(rows)
+    finally:
+        await db.close()
+        
+
+async def export_table(table_name: str):
+    """Mengembalikan tuple (headers, rows) dari sebuah tabel."""
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        cursor = await db.execute(f"SELECT * FROM {table_name}")
+        rows = await cursor.fetchall()
+        cursor_desc = await db.execute(f"PRAGMA table_info({table_name})")
+        columns = await cursor_desc.fetchall()
+        headers = [col[1] for col in columns]
+        return headers, rows
+    finally:
+        await db.close()

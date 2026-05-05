@@ -12,6 +12,7 @@ from app.handlers.admmember import router as admmember_router
 from app.handlers.admsetmsg import router as admsetmsg_router
 from app.database.db import init_db, migrate_json_to_db
 from app.handlers.admsetlimit import router as admsetlimit_router
+from app.handlers.admsetdata import router as admsetdata_router
 
 
 
@@ -27,6 +28,7 @@ dp.include_router(admsetstat_router)
 dp.include_router(admmember_router)
 dp.include_router(admsetmsg_router)
 dp.include_router(admsetlimit_router)
+dp.include_router(admsetdata_router)
 
 
 
