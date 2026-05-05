@@ -31,7 +31,7 @@ async def daftar_pilih_paket(callback: types.CallbackQuery):
     caption = (
         f"📦 <b>Paket {paket}</b>\n"
         f"{deskripsi}\n\n"
-        f"💰 Harga: {total_str}\n\n"
+        f"💰 Harga: <b>{total_str}</b>\n\n"
         f"Silakan lakukan pembayaran ke QRIS di atas."
     )
 
@@ -110,7 +110,7 @@ async def daftar_terima_bukti(message: types.Message, state: FSMContext, bot):
             f"User ID: <code>{user.id}</code>\n"
             f"Username: @{user.username or '-'}\n"
             f"Paket: {paket}\n"
-            f"Harga: {harga_str}"
+            f"Harga: <b>{harga_str}</b>"
         ),
         parse_mode="HTML",
         reply_markup=builder.as_markup()
