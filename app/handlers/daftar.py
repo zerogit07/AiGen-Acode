@@ -17,13 +17,9 @@ async def daftar_pilih_paket(callback: types.CallbackQuery):
     if not deskripsi:
         deskripsi = f"Paket {paket} - Deskripsi belum diatur oleh admin."
 
-    # Ambil harga dasar
     harga_dasar = ambil_harga(paket.lower())
-
-    # Ambil 3 digit terakhir User ID
     kode_unik = int(str(callback.from_user.id)[-3:])
 
-    # Hitung total
     if harga_dasar is not None:
         total = harga_dasar + kode_unik
         total_str = f"Rp {total:,}".replace(",", ".")
@@ -38,6 +34,9 @@ async def daftar_pilih_paket(callback: types.CallbackQuery):
         f"💰 Harga: {total_str}\n\n"
         f"Silakan lakukan pembayaran ke QRIS di atas."
     )
+
+    # Hapus pesan non‑member (yang berisi tombol Lite/Pro/Ultra)
+    await callback.message.delete()
 
     if qris:
         await callback.message.answer_photo(
@@ -57,13 +56,18 @@ async def daftar_pilih_paket(callback: types.CallbackQuery):
 # === TOMBOL KEMBALI ===
 @router.callback_query(F.data == "kembali_nonmember")
 async def daftar_kembali(callback: types.CallbackQuery):
+    # Hapus pesan detail paket (bisa foto / teks)
     await callback.message.delete()
+    # Kirim ulang halaman non‑member
+    deskripsi_banner = ambil_deskripsi("banner")
+    if not deskripsi_banner:
+        deskripsi_banner = "Maaf, kamu belum terdaftar.\nSilakan pilih paket pendaftaran di bawah ini:"
     await callback.message.answer(
-        "Maaf, kamu belum terdaftar.\nSilakan pilih paket pendaftaran di bawah ini:",
+        deskripsi_banner,
         reply_markup=nonmember_keyboard()
     )
     await callback.answer()
-
+    
 # === TOMBOL KIRIM BUKTI ===
 @router.callback_query(F.data.startswith("kirim_bukti_"))
 async def daftar_minta_bukti(callback: types.CallbackQuery, state: FSMContext):
