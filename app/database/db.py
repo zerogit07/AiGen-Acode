@@ -64,7 +64,38 @@ async def init_db():
                 harga INTEGER
             )
         """)
-
+        # Tabel models
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS models (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                callback_data TEXT NOT NULL UNIQUE,
+                is_active INTEGER DEFAULT 1,
+                sort_order INTEGER DEFAULT 0
+            )
+        """)
+        
+        # Isi default model jika masih kosong
+        cursor = await db.execute("SELECT COUNT(*) FROM models")
+        count = (await cursor.fetchone())[0]
+        if count == 0:
+            default_models = [
+                ("🎬 Kling V3", "model_kling_v3"),
+                ("🚀 Kling V3 Motion", "model_kling_v3_motion"),
+                ("🌀 Kling V3 Omni", "model_kling_v3_omni"),
+                ("⚡ Kling 2.6 Pro", "model_kling_26_pro"),
+                ("💨 Kling 2.6 Motion", "model_kling_26_motion"),
+                ("🔥 Kling 2.5 Turbo", "model_kling_25_turbo"),
+                ("🎯 Kling 2.1", "model_kling_21"),
+                ("🧠 Kling O1", "model_kling_o1"),
+                ("🌌 Veo 3.1", "model_veo_31"),
+                ("🍌 Nano Banana", "model_nano_banana"),
+            ]
+            for idx, (name, cb) in enumerate(default_models, 1):
+                await db.execute(
+                    "INSERT INTO models (name, callback_data, is_active, sort_order) VALUES (?, ?, 1, ?)",
+                    (name, cb, idx)
+                )
         await db.commit()
     finally:
         await db.close()
@@ -143,7 +174,7 @@ async def set_limit(paket: str, process_limit: int, daily_quota: int):
         await db.commit()
     finally:
         await db.close()
-        
+
 async def import_csv_to_table(table_name: str, headers: list, rows: list):
     """Mengimpor data CSV ke tabel. Menghapus data lama terlebih dahulu."""
     db = await aiosqlite.connect(DB_PATH)
@@ -168,5 +199,47 @@ async def export_table(table_name: str):
         columns = await cursor_desc.fetchall()
         headers = [col[1] for col in columns]
         return headers, rows
+    finally:
+        await db.close()
+        
+
+async def get_all_models(active_only: bool = False):
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        if active_only:
+            cursor = await db.execute("SELECT * FROM models WHERE is_active = 1 ORDER BY sort_order ASC")
+        else:
+            cursor = await db.execute("SELECT * FROM models ORDER BY sort_order ASC")
+        return await cursor.fetchall()
+    finally:
+        await db.close()
+
+async def swap_model_order(id1: int, id2: int):
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        cursor = await db.execute("SELECT sort_order FROM models WHERE id = ?", (id1,))
+        row1 = await cursor.fetchone()
+        cursor = await db.execute("SELECT sort_order FROM models WHERE id = ?", (id2,))
+        row2 = await cursor.fetchone()
+        if not row1 or not row2:
+            return False
+        await db.execute("UPDATE models SET sort_order = ? WHERE id = ?", (row2[0], id1))
+        await db.execute("UPDATE models SET sort_order = ? WHERE id = ?", (row1[0], id2))
+        await db.commit()
+        return True
+    finally:
+        await db.close()
+
+async def toggle_model_active(model_id: int):
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        await db.execute(
+            "UPDATE models SET is_active = CASE WHEN is_active = 1 THEN 0 ELSE 1 END WHERE id = ?",
+            (model_id,)
+        )
+        await db.commit()
+        cursor = await db.execute("SELECT name, is_active FROM models WHERE id = ?", (model_id,))
+        row = await cursor.fetchone()
+        return row if row else (None, None)
     finally:
         await db.close()

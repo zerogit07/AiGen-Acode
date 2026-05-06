@@ -11,22 +11,22 @@ router = Router()
 async def cmd_start(message: types.Message):
     user_id = message.from_user.id
 
-    # 1. Admin
+    # Admin
     if user_id == ADMIN_ID:
         await message.answer(
             "<b>🤖 Menu Utama</b>",
             parse_mode="HTML",
-            reply_markup=menu_utama()
+            reply_markup=await menu_utama(user_id=user_id, is_admin=True)
         )
         return
 
-    # 2. Member (Lite, Pro, Ultra)
+    # Member (Lite, Pro, Ultra)
     paket = get_member(user_id)
     if paket:
         await message.answer(
             "<b>🤖 Menu Utama</b>",
             parse_mode="HTML",
-            reply_markup=menu_utama()
+            reply_markup=await menu_utama(user_id=user_id, is_admin=False)
         )
         return
 
