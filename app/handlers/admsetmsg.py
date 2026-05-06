@@ -18,7 +18,7 @@ async def admsetmsg_menu(callback: types.CallbackQuery):
     builder.button(text="📢 Broadcast".center(25), callback_data="msg_broadcast")
     builder.button(text="📩 Privat Message".center(25), callback_data="msg_privat")
     builder.button(text="🔙 Kembali".center(25), callback_data="admin_panel")
-    builder.adjust(1)
+    builder.adjust(2)
 
     await callback.message.edit_text(
         "<b>💬 Setting Message</b>\nPilih jenis pesan yang ingin dikirim.",

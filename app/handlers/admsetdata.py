@@ -38,7 +38,7 @@ async def admsetdata_menu(callback: types.CallbackQuery):
     builder.button(text="📤 Export CSV".center(25), callback_data="data_export")
     builder.button(text="📥 Import CSV".center(25), callback_data="data_import")
     builder.button(text="🔙 Kembali".center(25), callback_data="admin_panel")
-    builder.adjust(1)
+    builder.adjust(2)
 
     await callback.message.edit_text(
         "<b>🗄️ Setting Data</b>\nPilih operasi:",

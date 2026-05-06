@@ -48,13 +48,20 @@ async def init_db():
             )
         """)
 
+
         # Tabel proxies
         await db.execute("""
             CREATE TABLE IF NOT EXISTS proxies (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                url TEXT NOT NULL
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            password TEXT NOT NULL,
+            host TEXT NOT NULL,
+            port INTEGER NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            last_used TEXT
             )
         """)
+
 
         # Tabel pages
         await db.execute("""
@@ -301,5 +308,66 @@ async def reset_api_keys(new_keys: list):
             )
         await db.commit()
         return len(new_keys)
+    finally:
+        await db.close()
+        
+# ========== PROXY ==========
+async def get_all_proxies():
+    """Mengembalikan list semua proxy: [(id, username, password, host, port, is_active, last_used), ...]"""
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        cursor = await db.execute("SELECT id, username, password, host, port, is_active, last_used FROM proxies ORDER BY id")
+        return await cursor.fetchall()
+    finally:
+        await db.close()
+
+async def add_proxy(username: str, password: str, host: str, port: int):
+    """Tambahkan satu proxy ke database."""
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        await db.execute(
+            "INSERT INTO proxies (username, password, host, port) VALUES (?, ?, ?, ?)",
+            (username, password, host, port)
+        )
+        await db.commit()
+    finally:
+        await db.close()
+
+async def delete_proxy(proxy_id: int):
+    """Hapus proxy berdasarkan ID."""
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        await db.execute("DELETE FROM proxies WHERE id = ?", (proxy_id,))
+        await db.commit()
+    finally:
+        await db.close()
+
+async def toggle_proxy(proxy_id: int):
+    """Aktifkan/Nonaktifkan proxy. Kembalikan (id, is_active) baru."""
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        await db.execute(
+            "UPDATE proxies SET is_active = CASE WHEN is_active = 1 THEN 0 ELSE 1 END WHERE id = ?",
+            (proxy_id,)
+        )
+        await db.commit()
+        cursor = await db.execute("SELECT id, is_active FROM proxies WHERE id = ?", (proxy_id,))
+        row = await cursor.fetchone()
+        return (row[0], row[1]) if row else (None, None)
+    finally:
+        await db.close()
+
+async def reset_proxies(new_list: list):
+    """Hapus semua proxy, lalu tambahkan yang baru. new_list: list of (username, password, host, port)."""
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        await db.execute("DELETE FROM proxies")
+        for username, password, host, port in new_list:
+            await db.execute(
+                "INSERT INTO proxies (username, password, host, port) VALUES (?, ?, ?, ?)",
+                (username, password, host, int(port))
+            )
+        await db.commit()
+        return len(new_list)
     finally:
         await db.close()
