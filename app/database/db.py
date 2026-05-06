@@ -42,8 +42,9 @@ async def init_db():
         # Tabel api_keys
         await db.execute("""
             CREATE TABLE IF NOT EXISTS api_keys (
-                name TEXT PRIMARY KEY,
-                key TEXT NOT NULL
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            key TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1
             )
         """)
 
@@ -241,5 +242,64 @@ async def toggle_model_active(model_id: int):
         cursor = await db.execute("SELECT name, is_active FROM models WHERE id = ?", (model_id,))
         row = await cursor.fetchone()
         return row if row else (None, None)
+    finally:
+        await db.close()
+        
+#   ---Apikey---      
+async def get_api_keys():
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        cursor = await db.execute("SELECT id, key, is_active FROM api_keys ORDER BY id")
+        rows = await cursor.fetchall()
+        return rows
+    finally:
+        await db.close()
+
+async def add_api_keys_bulk(keys: list):
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        for key in keys:
+            await db.execute(
+                "INSERT INTO api_keys (key, is_active) VALUES (?, 1)",
+                (key,)
+            )
+        await db.commit()
+        return len(keys)
+    finally:
+        await db.close()
+
+async def delete_api_key(key_id: int):
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        await db.execute("DELETE FROM api_keys WHERE id = ?", (key_id,))
+        await db.commit()
+    finally:
+        await db.close()
+
+async def toggle_api_key(key_id: int):
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        await db.execute(
+            "UPDATE api_keys SET is_active = CASE WHEN is_active = 1 THEN 0 ELSE 1 END WHERE id = ?",
+            (key_id,)
+        )
+        await db.commit()
+        cursor = await db.execute("SELECT id, is_active FROM api_keys WHERE id = ?", (key_id,))
+        row = await cursor.fetchone()
+        return (row[0], row[1]) if row else (None, None)
+    finally:
+        await db.close()
+
+async def reset_api_keys(new_keys: list):
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        await db.execute("DELETE FROM api_keys")
+        for key in new_keys:
+            await db.execute(
+                "INSERT INTO api_keys (key, is_active) VALUES (?, 1)",
+                (key,)
+            )
+        await db.commit()
+        return len(new_keys)
     finally:
         await db.close()
