@@ -43,7 +43,7 @@ class ResourceManager:
         self.proxies = [dict(p) for p in proxies if p.get("is_active")]
         fingerprints = await get_all_fingerprints()
         self.fingerprints = [dict(f) for f in fingerprints if f.get("is_active")]
-        keys = await get_api_keys(active_only=True)
+        keys = await get_api_keys()
         self.api_keys = [k["key"] for k in keys]
         # Acak daftar untuk round robin
         random.shuffle(self.proxies)
