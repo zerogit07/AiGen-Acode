@@ -16,7 +16,7 @@ from app.handlers.admsetdata import router as admsetdata_router
 from app.handlers.admsetmodel import router as admsetmodel_router
 from app.handlers.admsetapikey import router as admsetapikey_router
 from app.handlers.admsetproxy import router as admsetproxy_router
-
+from app.handlers.frontend_models.kling_2_1 import router as kling_21_router
 
 
 
@@ -36,6 +36,7 @@ dp.include_router(admsetdata_router)
 dp.include_router(admsetmodel_router)
 dp.include_router(admsetapikey_router)
 dp.include_router(admsetproxy_router)
+dp.include_router(kling_21_router)
 
 
 

@@ -104,6 +104,31 @@ async def init_db():
                     "INSERT INTO models (name, callback_data, is_active, sort_order) VALUES (?, ?, 1, ?)",
                     (name, cb, idx)
                 )
+                
+                # Tabel fingerprints
+                await db.execute("""
+                    CREATE TABLE IF NOT EXISTS fingerprints (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    ja3_string TEXT,
+                   user_agent TEXT,
+                  is_active INTEGER DEFAULT 1
+                  )
+                """)
+                # Isi default jika kosong
+        cursor = await db.execute("SELECT COUNT(*) FROM fingerprints")
+        count = (await cursor.fetchone())[0]
+        if count == 0:
+            default_fingerprints = [
+                ("Chrome 127 Windows", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"),
+                ("Firefox 129 Windows", "4865-4867-4866-49195-49199-52393-52392-49196-49200-49171-49172-156-157-47-53", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0"),
+                ("Chrome 127 Mac", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"),
+            ]
+            for name, ja3, ua in default_fingerprints:
+                await db.execute(
+                    "INSERT INTO fingerprints (name, ja3_string, user_agent) VALUES (?, ?, ?)",
+                    (name, ja3, ua)
+                )
         await db.commit()
     finally:
         await db.close()
@@ -369,5 +394,27 @@ async def reset_proxies(new_list: list):
             )
         await db.commit()
         return len(new_list)
+    finally:
+        await db.close()
+        
+# ----Fingerprint----- 
+async def get_all_fingerprints():
+    """Ambil semua fingerprint aktif. Kembalikan list of dict."""
+    db = await aiosqlite.connect(DB_PATH)
+    try:
+        cursor = await db.execute(
+            "SELECT id, name, ja3_string, user_agent, is_active FROM fingerprints WHERE is_active = 1 ORDER BY id"
+        )
+        rows = await cursor.fetchall()
+        return [
+            {
+                "id": row[0],
+                "name": row[1],
+                "ja3_string": row[2],
+                "user_agent": row[3],
+                "is_active": row[4],
+            }
+            for row in rows
+        ]
     finally:
         await db.close()
