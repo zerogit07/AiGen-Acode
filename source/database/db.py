@@ -1,6 +1,6 @@
 import aiosqlite
 
-DB_PATH = "aigen.db"
+DB_PATH = "source/database/aigen.db"
 
 async def init_db():
     """Membuat semua tabel jika belum ada."""
