@@ -1,4 +1,4 @@
-# app/services/job_runner.py
+# source/services/job_runner.py
 
 import asyncio
 import random
@@ -37,6 +37,7 @@ class JobRunner:
         self.model = job_data.get("model")
         self.params = job_data.get("params", {})
         self.user_id = job_data.get("user_id")
+        self.progress_msg_id = job_data.get("progress_msg_id")
 
         # Konfigurasi retry & jeda
         self.max_retries = 5
@@ -101,8 +102,8 @@ class JobRunner:
         """Buat session aiohttp dengan proxy & header spoofing."""
         proxy_host = self.tripel["proxy"]["host"]
         proxy_port = self.tripel["proxy"]["port"]
-        proxy_url = f"http://{proxy_host}:{proxy_port}" #noqa
-        proxy_auth = aiohttp.BasicAuth( #noqa
+        proxy_url = f"http://{proxy_host}:{proxy_port}"  # noqa
+        proxy_auth = aiohttp.BasicAuth(  # noqa
             self.tripel["proxy"]["username"],
             self.tripel["proxy"]["password"],
         )
@@ -124,8 +125,8 @@ class JobRunner:
 
         proxy_host = self.tripel["proxy"]["host"]
         proxy_port = self.tripel["proxy"]["port"]
-        proxy_url = f"http://{proxy_host}:{proxy_port}"
-        proxy_auth = aiohttp.BasicAuth(
+        proxy_url = f"http://{proxy_host}:{proxy_port}"  # noqa
+        proxy_auth = aiohttp.BasicAuth(  # noqa
             self.tripel["proxy"]["username"],
             self.tripel["proxy"]["password"],
         )
@@ -142,7 +143,18 @@ class JobRunner:
         ) as resp:
             if resp.status == 200:
                 data = await resp.json()
-                return data["data"]["task_id"]
+                task_id = data["data"]["task_id"]
+                # Update pesan menjadi "Processing generation..."
+                if self.progress_msg_id:
+                    try:
+                        await self.bot.edit_message_text(
+                            chat_id=self.user_id,
+                            message_id=self.progress_msg_id,
+                            text="🔄 Processing generation..."
+                        )
+                    except Exception:
+                        pass
+                return task_id
             else:
                 body = await resp.text()
                 raise Exception(f"HTTP {resp.status}: {body}")
@@ -156,8 +168,8 @@ class JobRunner:
 
         proxy_host = self.tripel["proxy"]["host"]
         proxy_port = self.tripel["proxy"]["port"]
-        proxy_url = f"http://{proxy_host}:{proxy_port}" 
-        proxy_auth = aiohttp.BasicAuth(
+        proxy_url = f"http://{proxy_host}:{proxy_port}"  # noqa
+        proxy_auth = aiohttp.BasicAuth(  # noqa
             self.tripel["proxy"]["username"],
             self.tripel["proxy"]["password"],
         )
@@ -187,8 +199,20 @@ class JobRunner:
                             "status": "FAILED",
                             "message": "Proses oleh API gagal.",
                         }
-                else:
-                    print(f"Polling HTTP {resp.status}")
+
+                # Update loading bar (berdasarkan waktu berlalu)
+                elapsed = time.time() - start_time
+                progress = min(elapsed / max_duration, 1.0)
+                filled = int(progress * 10)
+                bar = "█" * filled + "░" * (10 - filled)
+                try:
+                    await self.bot.edit_message_text(
+                        chat_id=self.user_id,
+                        message_id=self.progress_msg_id,
+                        text=f"🔄 Processing generation...\n[{bar}] {int(progress * 100)}%"
+                    )
+                except Exception:
+                    pass
 
         return {"status": "FAILED", "message": "Polling melebihi waktu maksimal."}
 
@@ -204,23 +228,47 @@ class JobRunner:
             return
 
         try:
+            chat_id = self.user_id
+
             if result.get("status") == "COMPLETED":
                 videos = result.get("videos", [])
+                # Hapus pesan progress
+                if self.progress_msg_id:
+                    try:
+                        await self.bot.delete_message(chat_id, self.progress_msg_id)
+                    except Exception:
+                        pass  # abaikan jika sudah dihapus
                 if videos:
-                    await self.bot.send_message(
-                        chat_id=self.user_id,
-                        text=f"🎉 Video selesai!\n{videos[0]}",
+                    # Kirim video dengan caption
+                    await self.bot.send_video(
+                        chat_id=chat_id,
+                        video=videos[0],
+                        caption="✅ Success generation!"
                     )
                 else:
                     await self.bot.send_message(
-                        chat_id=self.user_id,
+                        chat_id=chat_id,
                         text="🎉 Video selesai, tapi link tidak tersedia.",
                     )
             else:
-                message = result.get("message", "Gagal.")
-                await self.bot.send_message(
-                    chat_id=self.user_id,
-                    text=f"❌ Maaf, video gagal dibuat.\n{message}",
-                )
+                # Gagal: edit pesan progress dengan info error
+                error_message = result.get("message", "Gagal.")
+                if self.progress_msg_id:
+                    try:
+                        await self.bot.edit_message_text(
+                            chat_id=chat_id,
+                            message_id=self.progress_msg_id,
+                            text=f"❌ Failed generation!\nRespon API: {error_message}"
+                        )
+                    except Exception:
+                        await self.bot.send_message(
+                            chat_id=chat_id,
+                            text=f"❌ Failed generation!\nRespon API: {error_message}"
+                        )
+                else:
+                    await self.bot.send_message(
+                        chat_id=chat_id,
+                        text=f"❌ Failed generation!\nRespon API: {error_message}"
+                    )
         except Exception as e:
             print(f"Gagal kirim notifikasi ke {self.user_id}: {e}")

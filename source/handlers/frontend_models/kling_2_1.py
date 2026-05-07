@@ -1,5 +1,3 @@
-# app/handlers/frontend_models/kling_2_1.py
-
 import base64
 from aiogram import Router, F, types, Bot
 from aiogram.fsm.context import FSMContext
@@ -11,7 +9,6 @@ from source.services.backend_models.kling_2_1_pro import Kling21Pro
 
 router = Router()
 
-# ---------- FSM States ----------
 class Kling21State(StatesGroup):
     pilih_resolusi = State()
     pilih_durasi = State()
@@ -19,64 +16,38 @@ class Kling21State(StatesGroup):
     input_image_tail = State()
     input_prompt = State()
 
-# ---------- Fungsi Pembantu ----------
 async def file_id_to_base64(bot: Bot, file_id: str) -> str:
     file = await bot.get_file(file_id)
     file_bytes = await bot.download_file(file.file_path)
     return base64.b64encode(file_bytes.read()).decode("utf-8")
 
-async def execute_video(event, user_id: int, state: FSMContext, bot: Bot):
-    """Menyiapkan payload, memilih model, lalu mengirim ke JobManager."""
-    data = await state.get_data()
-    is_pro = data["is_pro"]
-    durasi = data.get("durasi", "5")
+# --- Handler untuk tombol Kembali ke menu utama ---
+@router.callback_query(F.data == "main_menu")
+async def back_to_main_menu(callback: types.CallbackQuery, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state:
+        await state.clear()
+    from source.keyboards.inlinestart import menu_utama
+    await callback.message.edit_text(
+        "<b>🤖 Menu Utama</b>",
+        parse_mode="HTML",
+        reply_markup=await menu_utama(callback.from_user.id, is_admin=False)
+    )
+    await callback.answer()
 
-    # Konversi gambar
-    image_base64 = await file_id_to_base64(bot, data["image"])
-    image_tail_base64 = None
-    if data.get("image_tail"):
-        image_tail_base64 = await file_id_to_base64(bot, data["image_tail"])
-
-    # Pilih model
-    model = Kling21Pro() if is_pro else Kling21Std()
-    payload = {
-        "image": image_base64,
-        "prompt": data.get("prompt", ""),
-        "duration": durasi
-    }
-    if image_tail_base64:
-        payload["image_tail"] = image_tail_base64
-
-    job_data = {
-        "user_id": user_id,
-        "model": model,
-        "params": payload
-    }
-    await JobManager().enqueue(job_data)
-
-    if isinstance(event, types.CallbackQuery):
-        await event.message.edit_text("✅ Video sedang dibuat! Kamu akan menerima notifikasi setelah selesai.")
-    else:
-        await event.answer("✅ Video sedang dibuat! Kamu akan menerima notifikasi setelah selesai.")
-    await state.clear()
-
-# ========== KEYBOARD ==========
 def back_keyboard():
     builder = InlineKeyboardBuilder()
     builder.button(text="🔙 Kembali", callback_data="model_kling_21")
     return builder.as_markup()
 
-# ========== START ==========
 @router.callback_query(F.data == "model_kling_21")
 async def kling21_start(callback: types.CallbackQuery, state: FSMContext):
-    await state.update_data(resolusi=None, durasi=None)  # reset pilihan
+    await state.update_data(resolusi=None, durasi=None)
     await show_resolution_duration_menu(callback, state)
 
 async def show_resolution_duration_menu(callback: types.CallbackQuery, state: FSMContext):
-    """Menampilkan dua baris tombol: resolusi dan durasi."""
     await state.set_state(Kling21State.pilih_resolusi)
     data = await state.get_data()
-
     builder = InlineKeyboardBuilder()
     builder.button(
         text="720p Standard" + (" ✅" if data.get("resolusi") == "720" else ""),
@@ -95,23 +66,19 @@ async def show_resolution_duration_menu(callback: types.CallbackQuery, state: FS
         callback_data="kling_dur_10"
     )
     builder.button(text="🔙 Kembali", callback_data="main_menu")
-    builder.adjust(2, 2, 1)  # 2 resolusi, 2 durasi, 1 kembali
-
+    builder.adjust(2, 2, 1)
     await callback.message.edit_text(
         "🎬 <b>Kling 2.1</b>\nSilakan pilih resolusi dan durasi:",
         parse_mode="HTML",
         reply_markup=builder.as_markup()
     )
 
-# ========== PILIH RESOLUSI ==========
 @router.callback_query(Kling21State.pilih_resolusi, F.data.startswith("kling_res_"))
 async def kling21_resolusi(callback: types.CallbackQuery, state: FSMContext):
     resolusi = callback.data.replace("kling_res_", "")
     await state.update_data(resolusi=resolusi, is_pro=(resolusi == "1080"))
     data = await state.get_data()
-    # Cek apakah durasi sudah dipilih
     if data.get("durasi"):
-        # Jika sudah, lanjut ke input gambar
         await state.set_state(Kling21State.input_image)
         await callback.message.edit_text(
             "📎 Kirim gambar <b>first frame</b> (wajib).",
@@ -119,19 +86,15 @@ async def kling21_resolusi(callback: types.CallbackQuery, state: FSMContext):
             reply_markup=back_keyboard()
         )
     else:
-        # Tampilkan ulang menu resolusi+durasi
         await show_resolution_duration_menu(callback, state)
     await callback.answer()
 
-# ========== PILIH DURASI ==========
 @router.callback_query(F.data.startswith("kling_dur_"))
 async def kling21_durasi(callback: types.CallbackQuery, state: FSMContext):
     durasi = callback.data.replace("kling_dur_", "")
     await state.update_data(durasi=durasi)
     data = await state.get_data()
-    # Cek apakah resolusi sudah dipilih
     if data.get("resolusi"):
-        # Jika sudah, lanjut ke input gambar
         await state.set_state(Kling21State.input_image)
         await callback.message.edit_text(
             "📎 Kirim gambar <b>first frame</b> (wajib).",
@@ -139,28 +102,9 @@ async def kling21_durasi(callback: types.CallbackQuery, state: FSMContext):
             reply_markup=back_keyboard()
         )
     else:
-        # Tampilkan ulang menu resolusi+durasi
         await show_resolution_duration_menu(callback, state)
     await callback.answer()
 
-# ========== Kembali menu utama ==========
-@router.callback_query(F.data == "main_menu")
-async def back_to_main_menu(callback: types.CallbackQuery, state: FSMContext):
-    # Bersihkan state FSM jika ada yang sedang berjalan
-    current_state = await state.get_state()
-    if current_state:
-        await state.clear()
-    
-    # Kirim ulang menu utama
-    from source.keyboards.inlinestart import menu_utama
-    await callback.message.edit_text(
-        "<b>🤖 Menu Utama</b>",
-        parse_mode="HTML",
-        reply_markup=await menu_utama(callback.from_user.id, is_admin=False)
-    )
-    await callback.answer()
-
-# ========== INPUT IMAGE (first frame) ==========
 @router.message(Kling21State.input_image, F.photo)
 async def kling21_image(message: types.Message, state: FSMContext):
     file_id = message.photo[-1].file_id
@@ -188,7 +132,6 @@ async def kling21_image(message: types.Message, state: FSMContext):
 async def kling21_image_invalid(message: types.Message):
     await message.answer("❌ Harap kirim gambar, bukan teks.")
 
-# ========== INPUT IMAGE TAIL (PRO ONLY) ==========
 @router.callback_query(Kling21State.input_image_tail, F.data == "skip_image_tail")
 async def kling21_skip_tail(callback: types.CallbackQuery, state: FSMContext):
     await state.update_data(image_tail=None)
@@ -217,4 +160,37 @@ async def kling21_prompt_and_execute(message: types.Message, state: FSMContext, 
         await message.answer("❌ Prompt wajib diisi minimal 5 karakter.")
         return
     await state.update_data(prompt=prompt)
-    await execute_video(message, message.from_user.id, state, bot)
+
+    # 1. Kirim pesan "Submitting..." dan simpan ID-nya
+    progress_msg = await message.answer("⏳ Submitting generation...")
+    progress_msg_id = progress_msg.message_id  # Simpan ID pesan
+
+    # 2. Siapkan data
+    data = await state.get_data()
+    user_id = message.from_user.id
+    is_pro = data["is_pro"]
+    durasi = data.get("durasi", "5")
+
+    image_base64 = await file_id_to_base64(bot, data["image"])
+    image_tail_base64 = None
+    if data.get("image_tail"):
+        image_tail_base64 = await file_id_to_base64(bot, data["image_tail"])
+
+    model = Kling21Pro() if is_pro else Kling21Std()
+    payload = {
+        "image": image_base64,
+        "prompt": data.get("prompt", ""),
+        "duration": durasi
+    }
+    if image_tail_base64:
+        payload["image_tail"] = image_tail_base64
+
+    # 3. Kirim ke JobManager
+    job_data = {
+        "user_id": user_id,
+        "model": model,
+        "params": payload,
+        "progress_msg_id": progress_msg_id  # ID pesan untuk di-update
+    }
+    await JobManager().enqueue(job_data)
+    await state.clear()

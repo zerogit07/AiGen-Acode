@@ -277,17 +277,24 @@ async def toggle_model_active(model_id: int):
     finally:
         await db.close()
         
-#   ---Apikey---      
+# ====================================================================
+# API KEY
+# ====================================================================
 async def get_api_keys():
+    """Mengembalikan list dictionary semua API key."""
     db = await aiosqlite.connect(DB_PATH)
     try:
         cursor = await db.execute("SELECT id, key, is_active FROM api_keys ORDER BY id")
         rows = await cursor.fetchall()
-        return rows
+        return [
+            {"id": row[0], "key": row[1], "is_active": row[2]}
+            for row in rows
+        ]
     finally:
         await db.close()
 
 async def add_api_keys_bulk(keys: list):
+    """Tambah banyak API key sekaligus."""
     db = await aiosqlite.connect(DB_PATH)
     try:
         for key in keys:
@@ -301,6 +308,7 @@ async def add_api_keys_bulk(keys: list):
         await db.close()
 
 async def delete_api_key(key_id: int):
+    """Hapus satu API key."""
     db = await aiosqlite.connect(DB_PATH)
     try:
         await db.execute("DELETE FROM api_keys WHERE id = ?", (key_id,))
@@ -309,6 +317,7 @@ async def delete_api_key(key_id: int):
         await db.close()
 
 async def toggle_api_key(key_id: int):
+    """Toggle is_active API key, kembalikan (id, is_active)."""
     db = await aiosqlite.connect(DB_PATH)
     try:
         await db.execute(
@@ -322,32 +331,43 @@ async def toggle_api_key(key_id: int):
     finally:
         await db.close()
 
-async def reset_api_keys(new_keys: list):
+async def reset_api_keys():
+    """Hapus semua API key."""
     db = await aiosqlite.connect(DB_PATH)
     try:
         await db.execute("DELETE FROM api_keys")
-        for key in new_keys:
-            await db.execute(
-                "INSERT INTO api_keys (key, is_active) VALUES (?, 1)",
-                (key,)
-            )
         await db.commit()
-        return len(new_keys)
     finally:
         await db.close()
-        
-# ========== PROXY ==========
+
+# ====================================================================
+# PROXY
+# ====================================================================
 async def get_all_proxies():
-    """Mengembalikan list semua proxy: [(id, username, password, host, port, is_active, last_used), ...]"""
+    """Mengembalikan list dictionary semua proxy."""
     db = await aiosqlite.connect(DB_PATH)
     try:
-        cursor = await db.execute("SELECT id, username, password, host, port, is_active, last_used FROM proxies ORDER BY id")
-        return await cursor.fetchall()
+        cursor = await db.execute(
+            "SELECT id, username, password, host, port, is_active, last_used FROM proxies ORDER BY id"
+        )
+        rows = await cursor.fetchall()
+        return [
+            {
+                "id": row[0],
+                "username": row[1],
+                "password": row[2],
+                "host": row[3],
+                "port": row[4],
+                "is_active": row[5],
+                "last_used": row[6],
+            }
+            for row in rows
+        ]
     finally:
         await db.close()
 
 async def add_proxy(username: str, password: str, host: str, port: int):
-    """Tambahkan satu proxy ke database."""
+    """Tambahkan satu proxy."""
     db = await aiosqlite.connect(DB_PATH)
     try:
         await db.execute(
@@ -359,7 +379,7 @@ async def add_proxy(username: str, password: str, host: str, port: int):
         await db.close()
 
 async def delete_proxy(proxy_id: int):
-    """Hapus proxy berdasarkan ID."""
+    """Hapus proxy."""
     db = await aiosqlite.connect(DB_PATH)
     try:
         await db.execute("DELETE FROM proxies WHERE id = ?", (proxy_id,))
@@ -368,7 +388,7 @@ async def delete_proxy(proxy_id: int):
         await db.close()
 
 async def toggle_proxy(proxy_id: int):
-    """Aktifkan/Nonaktifkan proxy. Kembalikan (id, is_active) baru."""
+    """Toggle is_active proxy, kembalikan (id, is_active)."""
     db = await aiosqlite.connect(DB_PATH)
     try:
         await db.execute(
@@ -382,24 +402,20 @@ async def toggle_proxy(proxy_id: int):
     finally:
         await db.close()
 
-async def reset_proxies(new_list: list):
-    """Hapus semua proxy, lalu tambahkan yang baru. new_list: list of (username, password, host, port)."""
+async def reset_proxies():
+    """Hapus semua proxy."""
     db = await aiosqlite.connect(DB_PATH)
     try:
         await db.execute("DELETE FROM proxies")
-        for username, password, host, port in new_list:
-            await db.execute(
-                "INSERT INTO proxies (username, password, host, port) VALUES (?, ?, ?, ?)",
-                (username, password, host, int(port))
-            )
         await db.commit()
-        return len(new_list)
     finally:
         await db.close()
-        
-# ----Fingerprint----- 
+
+# ====================================================================
+# FINGERPRINT
+# ====================================================================
 async def get_all_fingerprints():
-    """Ambil semua fingerprint aktif. Kembalikan list of dict."""
+    """Mengembalikan list dictionary fingerprint aktif."""
     db = await aiosqlite.connect(DB_PATH)
     try:
         cursor = await db.execute(
