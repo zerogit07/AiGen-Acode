@@ -1,7 +1,7 @@
-from app.services.backend_models.base import BaseModel
+from source.services.backend_models.base import BaseModel
 
-class Kling21Std(BaseModel):
-    POST_URL = "https://api.magnific.com/v1/ai/image-to-video/kling-v2-1-std"
+class Kling21Pro(BaseModel):
+    POST_URL = "https://api.magnific.com/v1/ai/image-to-video/kling-v2-1-pro"
     POLLING_URL = "https://api.magnific.com/v1/ai/image-to-video/kling-v2-1/{task_id}"
 
     @staticmethod
@@ -11,7 +11,8 @@ class Kling21Std(BaseModel):
             "image": kwargs["image"],
             "cfg_scale": kwargs.get("cfg_scale", 0.5)  # default sesuai dokumentasi
         }
-        # Opsional
+        if "image_tail" in kwargs:
+            payload["image_tail"] = kwargs["image_tail"]
         if "prompt" in kwargs:
             payload["prompt"] = kwargs["prompt"]
         if "negative_prompt" in kwargs:

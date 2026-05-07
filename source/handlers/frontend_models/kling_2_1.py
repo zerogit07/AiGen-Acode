@@ -5,9 +5,9 @@ from aiogram import Router, F, types, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from app.services.job_manager import JobManager
-from app.services.backend_models.kling_2_1_std import Kling21Std
-from app.services.backend_models.kling_2_1_pro import Kling21Pro
+from source.services.job_manager import JobManager
+from source.services.backend_models.kling_2_1_std import Kling21Std
+from source.services.backend_models.kling_2_1_pro import Kling21Pro
 
 router = Router()
 
@@ -152,7 +152,7 @@ async def back_to_main_menu(callback: types.CallbackQuery, state: FSMContext):
         await state.clear()
     
     # Kirim ulang menu utama
-    from app.keyboards.inlinestart import menu_utama
+    from source.keyboards.inlinestart import menu_utama
     await callback.message.edit_text(
         "<b>🤖 Menu Utama</b>",
         parse_mode="HTML",

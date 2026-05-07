@@ -1,8 +1,8 @@
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from app.states.admin_limit import AdminLimitState
-from app.database.db import set_limit
+from source.states.admin_limit import AdminLimitState
+from source.database.db import set_limit
 from config import ADMIN_ID
 
 router = Router()

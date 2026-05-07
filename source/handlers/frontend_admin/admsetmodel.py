@@ -1,6 +1,6 @@
 from aiogram import Router, F, types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from app.database.db import get_all_models, swap_model_order, toggle_model_active
+from source.database.db import get_all_models, swap_model_order, toggle_model_active
 from config import ADMIN_ID
 
 router = Router()

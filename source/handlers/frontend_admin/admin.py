@@ -1,7 +1,7 @@
 from aiogram import Router, types
 from aiogram.filters import Command
 from config import ADMIN_ID
-from app.keyboards.inlineadmin import admin_panel
+from source.keyboards.inlineadmin import admin_panel
 
 router = Router()
 

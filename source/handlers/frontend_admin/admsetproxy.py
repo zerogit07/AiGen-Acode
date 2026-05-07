@@ -1,8 +1,8 @@
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from app.states.admin_proxy import AdminProxyState
-from app.database.db import (
+from source.states.admin_proxy import AdminProxyState
+from source.database.db import (
     get_all_proxies, add_proxy, delete_proxy, toggle_proxy, reset_proxies
 )
 from config import ADMIN_ID

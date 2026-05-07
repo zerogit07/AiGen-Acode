@@ -9,7 +9,7 @@ from typing import Dict
 import aiohttp
 from aiogram import Bot
 
-from app.services.resource_manager import ResourceManager
+from source.services.resource_manager import ResourceManager
 
 
 class JobRunner:

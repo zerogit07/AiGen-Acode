@@ -1,8 +1,8 @@
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from app.states.adminpage import AdminPageState
-from app.utils.gambar_page import simpan_gambar, simpan_deskripsi, simpan_harga
+from source.states.adminpage import AdminPageState
+from source.utils.gambar_page import simpan_gambar, simpan_deskripsi, simpan_harga
 from config import ADMIN_ID
 
 router = Router()
@@ -182,7 +182,7 @@ async def kembali_ke_admin(callback: types.CallbackQuery):
     if callback.from_user.id != ADMIN_ID:
         await callback.answer("Akses ditolak.", show_alert=True)
         return
-    from app.keyboards.inlineadmin import admin_panel
+    from source.keyboards.inlineadmin import admin_panel
     await callback.message.edit_text(
         "<b>🔐 Admin Panel</b>",
         parse_mode="HTML",

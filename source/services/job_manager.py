@@ -3,8 +3,8 @@
 import asyncio
 from typing import Dict, List, Optional
 from aiogram import Bot
-from app.services.resource_manager import ResourceManager
-from app.services.job_runner import JobRunner
+from source.services.resource_manager import ResourceManager
+from source.services.job_runner import JobRunner
 
 class JobManager:
     _instance = None

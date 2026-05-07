@@ -1,5 +1,5 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from app.database.db import get_all_models
+from source.database.db import get_all_models
 
 async def menu_utama(user_id: int = None, is_admin: bool = False):
     """

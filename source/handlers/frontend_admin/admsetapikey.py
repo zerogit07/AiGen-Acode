@@ -1,8 +1,8 @@
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from app.states.admin_apikey import AdminApiKeyState
-from app.database.db import (
+from source.states.admin_apikey import AdminApiKeyState
+from source.database.db import (
     get_api_keys, add_api_keys_bulk, delete_api_key,
     toggle_api_key, reset_api_keys
 )
