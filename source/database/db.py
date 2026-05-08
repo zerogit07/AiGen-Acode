@@ -115,7 +115,7 @@ async def init_db():
                   is_active INTEGER DEFAULT 1
                   )
                 """)
-                # Isi default jika kosong
+        # Isi default jika kosong
         cursor = await db.execute("SELECT COUNT(*) FROM fingerprints")
         count = (await cursor.fetchone())[0]
         if count == 0:
@@ -123,6 +123,13 @@ async def init_db():
                 ("Chrome 127 Windows", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"),
                 ("Firefox 129 Windows", "4865-4867-4866-49195-49199-52393-52392-49196-49200-49171-49172-156-157-47-53", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0"),
                 ("Chrome 127 Mac", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"),
+                ("Safari 17.5 Mac", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"),
+                ("Edge 127 Windows", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0"),
+                ("Chrome 127 Linux", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"),
+                ("Firefox 129 Linux", "4865-4867-4866-49195-49199-52393-52392-49196-49200-49171-49172-156-157-47-53", "Mozilla/5.0 (X11; Linux x86_64; rv:129.0) Gecko/20100101 Firefox/129.0"),
+                ("Chrome 127 Android", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36"),
+                ("Safari 17.5 iOS", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1"),
+                ("Edge 127 Mac", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0"),
             ]
             for name, ja3, ua in default_fingerprints:
                 await db.execute(
