@@ -52,6 +52,7 @@ class JobRunner:
         """Jalankan seluruh alur: POST → Polling → Notifikasi → Cleanup."""
         session = await self._create_session()
         task_id = None
+        last_error = None 
         try:
             # --- POST dengan retry ---
             for attempt in range(1, self.max_retries + 1):
@@ -60,6 +61,7 @@ class JobRunner:
                     break
                 except Exception as e:
                     print(f"POST attempt {attempt} gagal: {e}")
+                    last_error = e
                     if attempt < self.max_retries:
                         # Lepas set gagal, cooling down
                         await self.resource_mgr.release_set(
@@ -82,10 +84,9 @@ class JobRunner:
                 result = await self._polling(session, task_id)
                 await self._notify_user(result)
             else:
-                await self._notify_user({
-                    "status": "FAILED",
-                    "message": "Gagal membuat video setelah beberapa percobaan.",
-                })
+            # Pesan gagal
+                msg = f"{last_error}"
+            await self._notify_user({"status": "FAILED", "message": msg})
         finally:
             if session:
                 await session.close()
@@ -258,17 +259,17 @@ class JobRunner:
                         await self.bot.edit_message_text(
                             chat_id=chat_id,
                             message_id=self.progress_msg_id,
-                            text=f"❌ Failed generation!\nRespon API: {error_message}"
+                            text=f"❌ Failed generation!\n{error_message}"
                         )
                     except Exception:
                         await self.bot.send_message(
                             chat_id=chat_id,
-                            text=f"❌ Failed generation!\nRespon API: {error_message}"
+                            text=f"❌ Failed generation!\n{error_message}"
                         )
                 else:
                     await self.bot.send_message(
                         chat_id=chat_id,
-                        text=f"❌ Failed generation!\nRespon API: {error_message}"
+                        text=f"❌ Failed generation!\n{error_message}"
                     )
         except Exception as e:
             print(f"Gagal kirim notifikasi ke {self.user_id}: {e}")
