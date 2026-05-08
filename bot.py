@@ -24,7 +24,7 @@ from source.handlers.frontend_admin.admsetproxy import router as admsetproxy_rou
 from source.handlers.frontend_models.kling_2_1 import router as kling_21_router
 
 # --- Database ---
-from source.database.db import init_db, migrate_json_to_db
+from source.database.db import init_db
 
 # --- Services ---
 from source.services.job_manager import JobManager
@@ -55,7 +55,6 @@ dp.include_router(kling_21_router)
 
 async def main():
     await init_db()
-    await migrate_json_to_db()
     
     # Inisialisasi JobManager agar siap menerima job
     await JobManager().initialize(bot)
