@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from source.database.db import export_table, import_csv_to_table
 from source.states.admin_data import AdminDataState
-from config import ADMIN_ID
+from source.config import ADMIN_ID
 
 router = Router()
 

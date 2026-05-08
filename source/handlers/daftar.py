@@ -4,7 +4,7 @@ from source.states.daftar_state import DaftarState
 from source.keyboards.inlinedaftar import daftar_keyboard
 from source.keyboards.inlinenonmember import nonmember_keyboard
 from source.utils.gambar_page import ambil_gambar, ambil_deskripsi, ambil_harga
-from config import ADMIN_ID
+from source.config import ADMIN_ID
 
 
 router = Router()

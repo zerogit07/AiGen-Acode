@@ -6,7 +6,7 @@ from source.utils.gambar_page import (
     ambil_semua_member, ambil_semua_nonmember,
     set_member, get_member, hapus_member, semua_member_urut
 )
-from config import ADMIN_ID
+from source.config import ADMIN_ID
 
 router = Router()
 MEMBERS_PER_PAGE = 10

@@ -1,6 +1,6 @@
 from aiogram import Router, types
 from aiogram.filters import Command
-from config import ADMIN_ID
+from source.config import ADMIN_ID
 from source.keyboards.inlinestart import menu_utama
 from source.keyboards.inlinenonmember import nonmember_keyboard
 from source.utils.gambar_page import ambil_gambar, ambil_deskripsi, get_member, catat_nonmember

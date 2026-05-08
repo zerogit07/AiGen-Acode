@@ -2,7 +2,7 @@ from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from source.states.daftar_state import DaftarState
 from source.utils.gambar_page import set_member
-from config import ADMIN_ID
+from source.config import ADMIN_ID
 
 router = Router()
 

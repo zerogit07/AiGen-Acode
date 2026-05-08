@@ -1,7 +1,7 @@
 from aiogram import Router, F, types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from source.utils.gambar_page import ambil_semua_member, ambil_semua_nonmember
-from config import ADMIN_ID
+from source.config import ADMIN_ID
 
 router = Router()
 

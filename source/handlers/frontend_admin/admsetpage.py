@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from source.states.adminpage import AdminPageState
 from source.utils.gambar_page import simpan_gambar, simpan_deskripsi, simpan_harga
-from config import ADMIN_ID
+from source.config import ADMIN_ID
 
 router = Router()
 

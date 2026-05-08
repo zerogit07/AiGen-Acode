@@ -7,7 +7,7 @@ from source.database.db import (
     get_all_proxies, add_proxy, delete_proxy,
     toggle_proxy, reset_proxies
 )
-from config import ADMIN_ID
+from source.config import ADMIN_ID
 
 router = Router()
 

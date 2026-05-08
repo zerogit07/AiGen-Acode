@@ -1,6 +1,6 @@
 from aiogram import Router, types
 from aiogram.filters import Command
-from config import ADMIN_ID
+from source.config import ADMIN_ID
 from source.utils.gambar_page import get_member
 
 router = Router()

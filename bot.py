@@ -1,8 +1,8 @@
 import asyncio
 from aiogram import Bot, Dispatcher
-from config import BOT_TOKEN
 
 # --- Router dari handler umum ---
+from source.config import BOT_TOKEN
 from source.handlers.start import router as start_router
 from source.handlers.status import router as status_router
 from source.handlers.daftar import router as daftar_router

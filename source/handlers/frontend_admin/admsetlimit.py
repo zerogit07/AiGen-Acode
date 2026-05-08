@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from source.states.admin_limit import AdminLimitState
 from source.database.db import set_limit
-from config import ADMIN_ID
+from source.config import ADMIN_ID
 
 router = Router()
 
